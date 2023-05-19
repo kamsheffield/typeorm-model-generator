@@ -6,6 +6,7 @@ import IConnectionOptions from "./IConnectionOptions";
 import IGenerationOptions from "./IGenerationOptions";
 import PostgresDriver from "./drivers/PostgresDriver";
 import MysqlDriver from "./drivers/MysqlDriver";
+import PlanetScaleDriver from "./drivers/PlanetScaleDriver";
 import OracleDriver from "./drivers/OracleDriver";
 import SqliteDriver from "./drivers/SqliteDriver";
 import modelCustomizationPhase from "./ModelCustomization";
@@ -26,6 +27,8 @@ export function createDriver(driverName: string): AbstractDriver {
             return new OracleDriver();
         case "sqlite":
             return new SqliteDriver();
+        case "planetscale":
+            return new PlanetScaleDriver();
         default:
             TomgUtils.LogError("Database engine not recognized.", false);
             throw new Error("Database engine not recognized.");

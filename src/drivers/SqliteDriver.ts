@@ -1,7 +1,7 @@
 import { ConnectionOptions } from "typeorm";
 import * as TypeormDriver from "typeorm/driver/sqlite/SqliteDriver";
 import { DataTypeDefaults } from "typeorm/driver/types/DataTypeDefaults";
-import type * as sqliteLib from "sqlite3";
+//import type * as sqliteLib from "sqlite3";
 import * as TomgUtils from "../Utils";
 import AbstractDriver from "./AbstractDriver";
 import IConnectionOptions from "../IConnectionOptions";
@@ -22,11 +22,11 @@ export default class SqliteDriver extends AbstractDriver {
 
     public readonly standardSchema = "";
 
-    private sqliteLib: typeof sqliteLib;
+    // private sqliteLib: typeof sqliteLib;
 
-    private sqlite: sqliteLib.sqlite3;
+    // private sqlite: sqliteLib.sqlite3;
 
-    private db: sqliteLib.Database;
+    // private db: sqliteLib.Database;
 
     private tablesWithGeneratedPrimaryKey: string[] = new Array<string>();
 
@@ -36,8 +36,8 @@ export default class SqliteDriver extends AbstractDriver {
         super();
         try {
             // eslint-disable-next-line import/no-extraneous-dependencies, global-require, import/no-unresolved
-            this.sqliteLib = require("sqlite3");
-            this.sqlite = this.sqliteLib.verbose();
+            // this.sqliteLib = require("sqlite3");
+            // this.sqlite = this.sqliteLib.verbose();
         } catch (error) {
             TomgUtils.LogError("", false, error);
             throw error;
@@ -387,26 +387,26 @@ export default class SqliteDriver extends AbstractDriver {
     }
 
     public async DisconnectFromServer() {
-        this.db.close();
+        // this.db.close();
     }
 
     public async ConnectToServer(connectionOptons: IConnectionOptions) {
         const promise = new Promise<void>((resolve, reject) => {
-            this.db = new this.sqlite.Database(
-                connectionOptons.databaseNames[0],
-                (err) => {
-                    if (err) {
-                        TomgUtils.LogError(
-                            "Error connecting to SQLite database.",
-                            false,
-                            err.message
-                        );
-                        reject(err);
-                        return;
-                    }
-                    resolve();
-                }
-            );
+            // this.db = new this.sqlite.Database(
+            //     connectionOptons.databaseNames[0],
+            //     (err) => {
+            //         if (err) {
+            //             TomgUtils.LogError(
+            //                 "Error connecting to SQLite database.",
+            //                 false,
+            //                 err.message
+            //             );
+            //             reject(err);
+            //             return;
+            //         }
+            //         resolve();
+            //     }
+            // );
         });
         return promise;
     }
@@ -429,21 +429,21 @@ export default class SqliteDriver extends AbstractDriver {
     public async ExecQuery<T>(sql: string): Promise<T[]> {
         let ret: T[] = [];
         const promise = new Promise<boolean>((resolve, reject) => {
-            this.db.serialize(() => {
-                this.db.all(sql, [], (err, row) => {
-                    if (!err) {
-                        ret = row;
-                        resolve(true);
-                    } else {
-                        TomgUtils.LogError(
-                            "Error executing query on SQLite.",
-                            false,
-                            err.message
-                        );
-                        reject(err);
-                    }
-                });
-            });
+            // this.db.serialize(() => {
+            //     this.db.all(sql, [], (err, row) => {
+            //         if (!err) {
+            //             ret = row;
+            //             resolve(true);
+            //         } else {
+            //             TomgUtils.LogError(
+            //                 "Error executing query on SQLite.",
+            //                 false,
+            //                 err.message
+            //             );
+            //             reject(err);
+            //         }
+            //     });
+            // });
         });
         await promise;
         return ret;

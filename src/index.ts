@@ -172,6 +172,7 @@ function checkYargsParameters(options: options): options {
                 "mariadb",
                 "oracle",
                 "sqlite",
+                "planetscale",
             ],
             demand: true,
             default: options.connectionOptions.databaseType,

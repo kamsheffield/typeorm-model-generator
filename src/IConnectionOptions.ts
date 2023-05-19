@@ -13,7 +13,8 @@ export default interface IConnectionOptions {
         | "mysql"
         | "mariadb"
         | "oracle"
-        | "sqlite";
+        | "sqlite"
+        | "planetscale";
     schemaNames: string[];
     instanceName?: string;
     ssl: boolean;

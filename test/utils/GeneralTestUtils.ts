@@ -11,6 +11,7 @@ import MariaDbDriver from "../../src/drivers/MariaDbDriver";
 import PostgresDriver from "../../src/drivers/PostgresDriver";
 import OracleDriver from "../../src/drivers/OracleDriver";
 import MysqlDriver from "../../src/drivers/MysqlDriver";
+import PlanetScaleDriver from "../../src/drivers/PlanetScaleDriver";
 import { assertUnreachable } from "../../src/Utils";
 
 export function getGenerationOptions(resultsPath: string): IGenerationOptions {
@@ -160,6 +161,7 @@ export async function createMysqlModels(
 
     return connectionOptions;
 }
+
 export async function createMariaDBModels(
     filesOrgPath: string
 ): Promise<IConnectionOptions> {
@@ -222,6 +224,38 @@ export async function createOracleDBModels(
         synchronize: true,
         entities: [path.resolve(filesOrgPath, "*.ts")],
         name: "oracle"
+    };
+    const conn = await createConnection(connOpt);
+
+    if (conn.isConnected) {
+        await conn.close();
+    }
+
+    return connectionOptions;
+}
+
+export async function createPlanetScaleModels(
+    filesOrgPath: string
+): Promise<IConnectionOptions> {
+    const driver = new MysqlDriver();
+    const connectionOptions = getTomgConnectionOptions("planetscale");
+    await driver.ConnectToServer(connectionOptions);
+
+    if (await driver.CheckIfDBExists(String(process.env.MYSQL_Database))) {
+        await driver.DropDB(String(process.env.MYSQL_Database));
+    }
+    await driver.CreateDB(String(process.env.MYSQL_Database));
+    await driver.DisconnectFromServer();
+
+    const connOpt: ConnectionOptions = {
+        host: String(process.env.PLANETSCALE_Host),
+        password: String(process.env.PLANETSCALE_Password),
+        type: "mysql",
+        username: String(process.env.PLANETSCALE_Username),
+        dropSchema: true,
+        synchronize: true,
+        entities: [path.resolve(filesOrgPath, "*.ts")],
+        name: "mysql"
     };
     const conn = await createConnection(connOpt);
 
@@ -301,6 +335,8 @@ export function createModelsInDb(
             return createMSSQLModels(filesOrgPathJS);
         case "oracle":
             return createOracleDBModels(filesOrgPathJS);
+        case "planetscale":
+            return createPlanetScaleModels(filesOrgPathJS);
         default:
             console.log(`Unknown engine type`);
             throw new Error("Unknown engine type");
@@ -318,7 +354,7 @@ export function getTomgConnectionOptions(dbType: IConnectionOptions["databaseTyp
                 user: String(process.env.MSSQL_Username),
                 password: String(process.env.MSSQL_Password),
                 databaseType: "mssql",
-                schemaNames: ["dbo","sch1","sch2"],
+                schemaNames: ["dbo", "sch1", "sch2"],
                 ssl: yn(process.env.MSSQL_SSL, { default: false }),
                 skipTables: [],
                 onlyTables: []
@@ -370,12 +406,24 @@ export function getTomgConnectionOptions(dbType: IConnectionOptions["databaseTyp
                 user: String(process.env.POSTGRES_Username),
                 password: String(process.env.POSTGRES_Password),
                 databaseType: "postgres",
-                schemaNames: ["public","sch1","sch2"],
+                schemaNames: ["public", "sch1", "sch2"],
                 ssl: yn(process.env.POSTGRES_SSL, { default: false }),
                 skipTables: ["spatial_ref_sys"],
                 onlyTables: []
             };
         case "sqlite": return {
+            host: "",
+            port: 0,
+            databaseNames: [String(process.env.SQLITE_Database)],
+            user: "",
+            password: "",
+            databaseType: "sqlite",
+            schemaNames: [""],
+            ssl: false,
+            skipTables: [],
+            onlyTables: []
+        };
+        case "planetscale": return {
             host: "",
             port: 0,
             databaseNames: [String(process.env.SQLITE_Database)],
