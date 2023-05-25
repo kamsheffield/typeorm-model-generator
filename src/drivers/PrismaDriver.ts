@@ -9,6 +9,7 @@ import { JoinColumnOptions, RelationOptions } from "typeorm";
 import { JoinTableMultipleColumnsOptions } from "typeorm/decorator/options/JoinTableMultipleColumnsOptions";
 import { OnUpdateType } from "typeorm/metadata/types/OnUpdateType";
 import { OnDeleteType } from "typeorm/metadata/types/OnDeleteType";
+import { boolean } from "yargs";
 
 export default class PrismaDriver extends AbstractDriver {
     public readonly EngineName: string = "Prisma";
@@ -71,9 +72,9 @@ export default class PrismaDriver extends AbstractDriver {
                         schema: schemas[0],
                         fileImports: [],
                         isEnum: true,
-                        enumValues: declaration.members.map(
-                            (m: any) => m.name.value
-                        ),
+                        enumValues: declaration.members
+                            .filter((m: any) => m.kind === "enumValue")
+                            .map((m: any) => m.name.value),
                     });
                     this.astEntities[declaration.name.value] = declaration;
                 }
@@ -118,10 +119,12 @@ export default class PrismaDriver extends AbstractDriver {
                         let joinColumnOptions: Required<JoinColumnOptions>[] =
                             [];
                         member.attributes.forEach((attribute: any) => {
-                            isPrimary = attribute.path.value.includes("id");
-                            isUnique = attribute.path.value.includes("unique")
-                                ? true
-                                : undefined;
+                            if (attribute.path.value.includes("id")) {
+                                isPrimary = true;
+                            }
+                            if (attribute.path.value.includes("unique")) {
+                                isUnique = true;
+                            }
 
                             // create the unique index if we have a unique field
                             if (isUnique) {
@@ -180,7 +183,9 @@ export default class PrismaDriver extends AbstractDriver {
                                 let references: string[] = [];
                                 let name: string | undefined = undefined;
                                 attribute.args.forEach((arg: any) => {
-                                    if (arg.name.value === "fields") {
+                                    if (arg.kind === "literal") {
+                                        name = arg.value;
+                                    } else if (arg.name.value === "fields") {
                                         fields = arg.expression.items.map(
                                             (item: any) => item.value[0]
                                         );
@@ -385,9 +390,19 @@ export default class PrismaDriver extends AbstractDriver {
                                 });
                             }
                         }
+                        let generated: "increment" | "uuid" | undefined =
+                            undefined;
+                        if (isPrimary && defaultValue) {
+                            if (defaultValue === "uuid") {
+                                generated = "uuid";
+                            } else {
+                                generated = "increment";
+                            }
+                            defaultValue = undefined;
+                        }
                         if (shouldPushColumn) {
                             entity.columns.push({
-                                generated: undefined,
+                                generated: generated,
                                 tscName: name,
                                 type: dbType,
                                 tscType: tsType,
@@ -541,6 +556,8 @@ export default class PrismaDriver extends AbstractDriver {
             if (prismaDefault === "now") {
                 defaultValue = "() => 'CURRENT_TIMESTAMP(3)'";
             }
+        } else if (defaultValue === "uuid") {
+            defaultValue = "() => 'uuid_generate_v4()'";
         } else {
             defaultValue = prismaDefault;
         }
