@@ -26,6 +26,7 @@
   },
   "homepage": "https://github.com/Kononnable/typeorm-model-generator#readme",
   "dependencies": {
+    "@loancrate/prisma-schema-parser": "^2.0.0",
     "@planetscale/database": "file:../../kamsheffield/planetscale-database-js",
     "change-case": "^4.1.2",
     "fs-extra": "^9.1.0",

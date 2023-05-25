@@ -3,7 +3,7 @@ import { ColumnType } from "typeorm";
 export type Column = {
     tscType: string;
     tscName: string;
-    type: ColumnType | string; // TODO: remove ?
+    type?: ColumnType | string; // TODO: remove ?
     isUsedInRelationAsOwner?: true; // TODO: move to separate object/calulate when us
     isUsedInRelationAsReferenced?: true; // TODO: move to separate object/calulate when us
 
@@ -12,6 +12,7 @@ export type Column = {
     default?: string; // ?
     options: {
         name: string;
+        type?: string;
         length?: number;
         width?: number;
         nullable?: boolean;
@@ -19,7 +20,7 @@ export type Column = {
         precision?: number;
         scale?: number;
         unsigned?: boolean;
-        enum?: string[];
+        enum?: string[] | string;
         array?: boolean; // ?
         comment?: string;
     };

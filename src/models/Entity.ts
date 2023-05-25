@@ -22,4 +22,6 @@ export type Entity = {
     }[];
     activeRecord?: true;
     generateConstructor?: true;
+    isEnum?: boolean;
+    enumValues?: string[];
 };

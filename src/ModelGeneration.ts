@@ -51,11 +51,20 @@ function generateModels(
     const entityTemplatePath = path.resolve(
         __dirname,
         "templates",
-        "entity.mst"
+        "entity.handlebars"
+    );
+    const enumTemplatePath = path.resolve(
+        __dirname,
+        "templates",
+        "enum.handlebars"
     );
     const entityTemplate = fs.readFileSync(entityTemplatePath, "utf-8");
     const entityCompliedTemplate = Handlebars.compile(entityTemplate, {
         noEscape: true,
+    });
+    const enumTemplate = fs.readFileSync(enumTemplatePath, "utf-8");
+    const enumCompiledTemplate = Handlebars.compile(enumTemplate, {
+        //noEscape: true,
     });
     databaseModel.forEach((element) => {
         let casedFileName = "";
@@ -79,25 +88,30 @@ function generateModels(
             entitiesPath,
             `${casedFileName}.ts`
         );
-        const rendered = entityCompliedTemplate(element);
-        const withImportStatements = removeUnusedImports(
-            EOL !== eolConverter[generationOptions.convertEol]
-                ? rendered.replace(
-                      /(\r\n|\n|\r)/gm,
-                      eolConverter[generationOptions.convertEol]
-                  )
-                : rendered
-        );
+        let rendered: any;
+        if (element.isEnum) {
+            rendered = enumCompiledTemplate(element);
+        } else {
+            rendered = entityCompliedTemplate(element);
+            rendered = removeUnusedImports(
+                EOL !== eolConverter[generationOptions.convertEol]
+                    ? rendered.replace(
+                          /(\r\n|\n|\r)/gm,
+                          eolConverter[generationOptions.convertEol]
+                      )
+                    : rendered
+            );
+        }
         let formatted = "";
         try {
-            formatted = Prettier.format(withImportStatements, prettierOptions);
+            formatted = Prettier.format(rendered, prettierOptions);
         } catch (error) {
             console.error(
                 "There were some problems with model generation for table: ",
                 element.sqlName
             );
             console.error(error);
-            formatted = withImportStatements;
+            formatted = rendered;
         }
         fs.writeFileSync(resultFilePath, formatted, {
             encoding: "utf-8",
@@ -111,7 +125,11 @@ function createIndexFile(
     generationOptions: IGenerationOptions,
     entitiesPath: string
 ) {
-    const templatePath = path.resolve(__dirname, "templates", "index.mst");
+    const templatePath = path.resolve(
+        __dirname,
+        "templates",
+        "index.handlebars"
+    );
     const template = fs.readFileSync(templatePath, "utf-8");
     const compliedTemplate = Handlebars.compile(template, {
         noEscape: true,
@@ -259,6 +277,9 @@ function createHandlebarsHelpers(generationOptions: IGenerationOptions): void {
         ne: (v1, v2) => v1 !== v2,
         or: (v1, v2) => v1 || v2,
     });
+    Handlebars.registerHelper("toUpperCase", function (str) {
+        return str.toUpperCase();
+    });
 }
 
 function createTsConfigFile(tsconfigPath: string): void {
@@ -268,7 +289,11 @@ function createTsConfigFile(tsconfigPath: string): void {
         );
         return;
     }
-    const templatePath = path.resolve(__dirname, "templates", "tsconfig.mst");
+    const templatePath = path.resolve(
+        __dirname,
+        "templates",
+        "tsconfig.handlebars"
+    );
     const template = fs.readFileSync(templatePath, "utf-8");
     const compliedTemplate = Handlebars.compile(template, {
         noEscape: true,
@@ -290,7 +315,11 @@ function createTypeOrmConfig(
         );
         return;
     }
-    const templatePath = path.resolve(__dirname, "templates", "ormconfig.mst");
+    const templatePath = path.resolve(
+        __dirname,
+        "templates",
+        "ormconfig.handlebars"
+    );
     const template = fs.readFileSync(templatePath, "utf-8");
     const compiledTemplate = Handlebars.compile(template, {
         noEscape: true,

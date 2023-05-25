@@ -12,6 +12,7 @@ import SqliteDriver from "./drivers/SqliteDriver";
 import modelCustomizationPhase from "./ModelCustomization";
 import modelGenerationPhase from "./ModelGeneration";
 import { Entity } from "./models/Entity";
+import PrismaDriver from "./drivers/PrismaDriver";
 
 export function createDriver(driverName: string): AbstractDriver {
     switch (driverName) {
@@ -29,6 +30,8 @@ export function createDriver(driverName: string): AbstractDriver {
             return new SqliteDriver();
         case "planetscale":
             return new PlanetScaleDriver();
+        case "prisma":
+            return new PrismaDriver();
         default:
             TomgUtils.LogError("Database engine not recognized.", false);
             throw new Error("Database engine not recognized.");
