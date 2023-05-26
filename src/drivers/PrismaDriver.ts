@@ -128,18 +128,24 @@ export default class PrismaDriver extends AbstractDriver {
 
                             // create the unique index if we have a unique field
                             if (isUnique) {
-                                entity.indices.push({
-                                    name:
-                                        entity.tscName +
-                                        "_" +
-                                        member.name.value +
-                                        "_key",
-                                    columns: [member.name.value],
-                                    options: {
-                                        unique: true,
-                                        fulltext: undefined,
-                                    },
-                                });
+                                const indexName =
+                                    entity.tscName +
+                                    "_" +
+                                    member.name.value +
+                                    "_key";
+                                const existingIndexes = entity.indices.filter(
+                                    (i) => i.name === indexName
+                                );
+                                if (existingIndexes.length === 0) {
+                                    entity.indices.push({
+                                        name: indexName,
+                                        columns: [member.name.value],
+                                        options: {
+                                            unique: true,
+                                            fulltext: undefined,
+                                        },
+                                    });
+                                }
                             }
 
                             if (attribute.path.value.includes("db")) {
@@ -202,7 +208,7 @@ export default class PrismaDriver extends AbstractDriver {
                                             relationOptions = {};
                                         }
                                         let onDeleteType: OnDeleteType;
-                                        switch (arg.expression.value) {
+                                        switch (arg.expression.value[0]) {
                                             case "NoAction":
                                                 onDeleteType = "NO ACTION";
                                                 break;
@@ -228,7 +234,7 @@ export default class PrismaDriver extends AbstractDriver {
                                             relationOptions = {};
                                         }
                                         let onUpdateType: OnUpdateType;
-                                        switch (arg.expression.value) {
+                                        switch (arg.expression.value[0]) {
                                             case "NoAction":
                                                 onUpdateType = "NO ACTION";
                                                 break;
@@ -418,6 +424,7 @@ export default class PrismaDriver extends AbstractDriver {
                                 dbType = "int";
                             }
                             defaultValue = undefined;
+                            length = undefined;
                         }
                         if (shouldPushColumn) {
                             entity.columns.push({
@@ -449,26 +456,33 @@ export default class PrismaDriver extends AbstractDriver {
                                         return item.value[0];
                                     }
                                 );
-                                entity.indices.push({
-                                    name:
-                                        entity.tscName +
-                                        "_" +
-                                        indexColumns.join("_") +
-                                        "_idx",
-                                    columns: indexColumns,
-                                    options: {
-                                        unique: member.path.value.includes(
-                                            "unique"
-                                        )
-                                            ? true
-                                            : undefined,
-                                        fulltext: member.path.value.includes(
-                                            "fulltext"
-                                        )
-                                            ? true
-                                            : undefined,
-                                    },
-                                });
+                                const indexName =
+                                    entity.tscName +
+                                    "_" +
+                                    indexColumns.join("_") +
+                                    "_idx";
+                                const existingIndexes = entity.indices.filter(
+                                    (i) => i.name === indexName
+                                );
+                                if (existingIndexes.length === 0) {
+                                    entity.indices.push({
+                                        name: indexName,
+                                        columns: indexColumns,
+                                        options: {
+                                            unique: member.path.value.includes(
+                                                "unique"
+                                            )
+                                                ? true
+                                                : undefined,
+                                            fulltext:
+                                                member.path.value.includes(
+                                                    "fulltext"
+                                                )
+                                                    ? true
+                                                    : undefined,
+                                        },
+                                    });
+                                }
                             } else {
                                 console.log("not an index");
                             }
