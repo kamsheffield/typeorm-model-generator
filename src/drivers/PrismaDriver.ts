@@ -279,6 +279,7 @@ export default class PrismaDriver extends AbstractDriver {
                         let enumType: string | undefined = undefined;
                         let type: string | undefined = undefined;
                         let shouldPushColumn = true;
+                        const isSelfReference = tsType === entity.tscName;
                         const otherAstEntity = this.astEntities[tsType];
                         if (otherAstEntity) {
                             if (otherAstEntity.kind === "model") {
@@ -311,23 +312,37 @@ export default class PrismaDriver extends AbstractDriver {
                                         }
                                         if (otherTypeName === entity.tscName) {
                                             if (
-                                                member.type.kind === "list" &&
-                                                otherMember.type.kind ===
-                                                    "typeId"
+                                                isSelfReference &&
+                                                member.type.kind === "list"
                                             ) {
                                                 relationType = "OneToMany";
-                                            } else if (
-                                                member.type.kind === "list" &&
-                                                otherMember.type.kind === "list"
-                                            ) {
-                                                relationType = "ManyToMany";
-                                            } else if (
-                                                member.type.kind === "typeId" &&
-                                                otherMember.type.kind === "list"
-                                            ) {
+                                            } else if (isSelfReference) {
                                                 relationType = "ManyToOne";
                                             } else {
-                                                relationType = "OneToOne";
+                                                if (
+                                                    member.type.kind ===
+                                                        "list" &&
+                                                    otherMember.type.kind ===
+                                                        "typeId"
+                                                ) {
+                                                    relationType = "OneToMany";
+                                                } else if (
+                                                    member.type.kind ===
+                                                        "list" &&
+                                                    otherMember.type.kind ===
+                                                        "list"
+                                                ) {
+                                                    relationType = "ManyToMany";
+                                                } else if (
+                                                    member.type.kind ===
+                                                        "typeId" &&
+                                                    otherMember.type.kind ===
+                                                        "list"
+                                                ) {
+                                                    relationType = "ManyToOne";
+                                                } else {
+                                                    relationType = "OneToOne";
+                                                }
                                             }
 
                                             let joinTableOptions:
@@ -390,13 +405,17 @@ export default class PrismaDriver extends AbstractDriver {
                                 });
                             }
                         }
-                        let generated: "increment" | "uuid" | undefined =
-                            undefined;
+                        let generated:
+                            | boolean
+                            | "increment"
+                            | "uuid"
+                            | undefined = undefined;
                         if (isPrimary && defaultValue) {
+                            generated = true;
                             if (defaultValue === "uuid") {
-                                generated = "uuid";
+                                dbType = "uuid";
                             } else {
-                                generated = "increment";
+                                dbType = "int";
                             }
                             defaultValue = undefined;
                         }
