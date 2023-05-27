@@ -329,21 +329,16 @@ export default class PrismaDriver extends AbstractDriver {
                                                     member.type.kind ===
                                                         "list" &&
                                                     otherMember.type.kind ===
-                                                        "typeId"
-                                                ) {
-                                                    relationType = "OneToMany";
-                                                } else if (
-                                                    member.type.kind ===
-                                                        "list" &&
-                                                    otherMember.type.kind ===
                                                         "list"
                                                 ) {
                                                     relationType = "ManyToMany";
                                                 } else if (
-                                                    member.type.kind ===
-                                                        "typeId" &&
+                                                    member.type.kind === "list"
+                                                ) {
+                                                    relationType = "OneToMany";
+                                                } else if (
                                                     otherMember.type.kind ===
-                                                        "list"
+                                                    "list"
                                                 ) {
                                                     relationType = "ManyToOne";
                                                 } else {
