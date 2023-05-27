@@ -584,6 +584,8 @@ export default class PrismaDriver extends AbstractDriver {
             if (prismaDefault === "now") {
                 defaultValue = "() => 'CURRENT_TIMESTAMP(3)'";
             }
+        } else if (prismaType === "Boolean") {
+            defaultValue = `${prismaDefault}`;
         } else if (defaultValue === "uuid") {
             defaultValue = "() => 'uuid_generate_v4()'";
         } else {
