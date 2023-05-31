@@ -10,6 +10,7 @@ export type Column = {
     primary?: boolean;
     generated?: true | "increment" | "uuid";
     default?: string; // ?
+    enum?: string; // used for typescript enum
     options: {
         name: string;
         type?: string;
@@ -20,7 +21,7 @@ export type Column = {
         precision?: number;
         scale?: number;
         unsigned?: boolean;
-        enum?: string[] | string;
+        enum?: string[]; // used for string[] enum
         array?: boolean; // ?
         comment?: string;
     };

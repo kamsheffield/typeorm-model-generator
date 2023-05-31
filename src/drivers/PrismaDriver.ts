@@ -55,7 +55,6 @@ export default class PrismaDriver extends AbstractDriver {
                         tscName: declaration.name.value,
                         fileName: declaration.name.value,
                         database: dbNames[0],
-                        schema: schemas[0],
                         fileImports: [],
                     });
                     this.astEntities[declaration.name.value] = declaration;
@@ -69,7 +68,6 @@ export default class PrismaDriver extends AbstractDriver {
                         tscName: declaration.name.value,
                         fileName: declaration.name.value,
                         database: dbNames[0],
-                        schema: schemas[0],
                         fileImports: [],
                         isEnum: true,
                         enumValues: declaration.members
@@ -429,13 +427,13 @@ export default class PrismaDriver extends AbstractDriver {
                                 tscType: tsType,
                                 default: defaultValue,
                                 primary: isPrimary,
+                                enum: enumType,
                                 options: {
                                     name: name,
                                     type: type,
                                     nullable: isOptional,
                                     unique: isUnique,
                                     length: length,
-                                    enum: enumType,
                                 },
                             });
                         }
@@ -582,7 +580,7 @@ export default class PrismaDriver extends AbstractDriver {
         let defaultValue: any | undefined = undefined;
         if (prismaType === "DateTime") {
             if (prismaDefault === "now") {
-                defaultValue = "() => 'CURRENT_TIMESTAMP(3)'";
+                defaultValue = "() => 'CURRENT_TIMESTAMP'";
             }
         } else if (prismaType === "Boolean") {
             defaultValue = `${prismaDefault}`;
