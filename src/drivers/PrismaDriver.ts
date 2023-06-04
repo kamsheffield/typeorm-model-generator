@@ -21,6 +21,7 @@ export default class PrismaDriver extends AbstractDriver {
 
     private ast: any;
     private astEntities: any = {};
+    private manyToManyRelations: string[] = [];
 
     public constructor() {
         super();
@@ -348,23 +349,48 @@ export default class PrismaDriver extends AbstractDriver {
                                                 | JoinTableMultipleColumnsOptions
                                                 | undefined = undefined;
                                             if (relationType === "ManyToMany") {
-                                                joinTableOptions = {
-                                                    name: `${entity.tscName}_${otherAstEntity.name.value}`,
-                                                    joinColumns: [
-                                                        {
-                                                            name: `${entity.tscName}_id`,
-                                                            referencedColumnName:
-                                                                "id",
-                                                        },
-                                                    ],
-                                                    inverseJoinColumns: [
-                                                        {
-                                                            name: `${otherAstEntity.name.value}_id`,
-                                                            referencedColumnName:
-                                                                "id",
-                                                        },
-                                                    ],
-                                                };
+                                                // determine the alphabetical order of entity.tscName and otherAstEntity.name.value
+                                                let [first, second] =
+                                                    entity.tscName <=
+                                                    otherAstEntity.name.value
+                                                        ? [
+                                                              entity.tscName,
+                                                              otherAstEntity
+                                                                  .name.value,
+                                                          ]
+                                                        : [
+                                                              otherAstEntity
+                                                                  .name.value,
+                                                              entity.tscName,
+                                                          ];
+                                                const joinTableName = `_${first}To${second}`;
+                                                // make sure that we don't already have thsi join table
+                                                if (
+                                                    !this.manyToManyRelations.includes(
+                                                        joinTableName
+                                                    )
+                                                ) {
+                                                    joinTableOptions = {
+                                                        name: joinTableName,
+                                                        joinColumns: [
+                                                            {
+                                                                name: `${first}_id`,
+                                                                referencedColumnName:
+                                                                    "id",
+                                                            },
+                                                        ],
+                                                        inverseJoinColumns: [
+                                                            {
+                                                                name: `${second}_id`,
+                                                                referencedColumnName:
+                                                                    "id",
+                                                            },
+                                                        ],
+                                                    };
+                                                    this.manyToManyRelations.push(
+                                                        joinTableName
+                                                    );
+                                                }
                                             }
 
                                             relatedField =
