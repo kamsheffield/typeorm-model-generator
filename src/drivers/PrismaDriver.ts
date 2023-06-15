@@ -127,11 +127,15 @@ export default class PrismaDriver extends AbstractDriver {
 
                             // create the unique index if we have a unique field
                             if (isUnique) {
-                                const indexName =
+                                let indexName =
                                     entity.tscName +
                                     "_" +
                                     member.name.value +
                                     "_key";
+                                if (indexName.length > 64) {
+                                    indexName = indexName.substring(0, 60);
+                                    indexName += "_key";
+                                }
                                 const existingIndexes = entity.indices.filter(
                                     (i) => i.name === indexName
                                 );
@@ -475,11 +479,15 @@ export default class PrismaDriver extends AbstractDriver {
                                         return item.value[0];
                                     }
                                 );
-                                const indexName =
+                                let indexName =
                                     entity.tscName +
                                     "_" +
                                     indexColumns.join("_") +
                                     "_idx";
+                                if (indexName.length > 64) {
+                                    indexName = indexName.substring(0, 60);
+                                    indexName += "_idx";
+                                }
                                 const existingIndexes = entity.indices.filter(
                                     (i) => i.name === indexName
                                 );
