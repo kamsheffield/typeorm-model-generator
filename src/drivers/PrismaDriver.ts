@@ -440,14 +440,17 @@ export default class PrismaDriver extends AbstractDriver {
                             | "uuid"
                             | undefined = undefined;
                         if (isPrimary && defaultValue) {
-                            generated = true;
                             if (defaultValue === "uuid") {
-                                dbType = "uuid";
+                                generated = "uuid";
+                                dbType = "varchar";
+                                length = 36;
+                                defaultValue = undefined;
                             } else {
+                                generated = "increment";
                                 dbType = "int";
+                                length = undefined;
+                                defaultValue = undefined;
                             }
-                            defaultValue = undefined;
-                            length = undefined;
                         }
                         if (shouldPushColumn) {
                             entity.columns.push({
